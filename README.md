@@ -2,9 +2,11 @@
 
 Crypto coin price tracking.
 
-<a align="center" href="https://how-much.vercel.app/#eth">
-  <img src="./preview.png" alt="Preview" title="How Much?" />
-</a>
+<div align="center">
+  <a href="https://how-much.vercel.app/#eth">
+    <img src="./preview.png" alt="Preview" title="How Much?" />
+  </a>
+</div>
 
 # Usage
 
