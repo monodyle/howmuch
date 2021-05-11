@@ -6,18 +6,19 @@
       >
         {{ coin.toUpperCase() }}
       </div>
-      <div
-        v-if="last?.data?.p"
-        :class="[
-          'text-xl',
-          last.data.p > prev.data.p
-            ? 'text-green-500'
-            : last.data.p === prev.data.p
-            ? 'text-gray-800'
-            : 'text-red-500',
-        ]"
-      >
-        {{ currencyFormatter.format(parseFloat(last.data.p)) }}
+      <div v-if="last.data?.p">
+        <span
+          :class="[
+            'text-xl',
+            last.data.p > prev.data.p
+              ? 'text-green-500'
+              : last.data.p === prev.data.p
+              ? 'text-gray-800'
+              : 'text-red-500',
+          ]"
+        >
+          {{ currencyFormatter(last.data.p) }}
+        </span>
       </div>
     </div>
   </div>
@@ -50,14 +51,18 @@ export default {
     };
 
     onMounted(() => {
-      if (localStorage.coin) {
+      const urlHash: string = window.location.hash?.replace("#", "");
+      if (urlHash) {
+        localStorage.coin = urlHash;
+        coin.value = urlHash;
+      } else if (localStorage.coin) {
         coin.value = localStorage.coin;
       } else {
         localStorage.coin = coin.value;
       }
 
       window.onhashchange = () => {
-        const hash: string = window.location.hash.replace("#", "");
+        const hash: string = window.location.hash?.replace("#", "");
         if (hash !== "") {
           socketChange(socket, "UNSUBSCRIBE", coin.value);
           localStorage.coin = hash;
