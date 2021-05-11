@@ -1,8 +1,7 @@
 <h1 align="center">How Much? 🪙</h1>
 
-Crypto coin price tracking.
-
 <div align="center">
+  <p>Crypto coin price tracking.</p>
   <a href="https://how-much.vercel.app/#eth">
     <img src="./preview.png" alt="Preview" title="How Much?" />
   </a>
