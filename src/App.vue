@@ -2,7 +2,7 @@
   <div class="flex items-center justify-center w-full h-screen text-center">
     <div class="w-full max-w-xs p-6">
       <div
-        class="flex items-center justify-center text-3xl font-semibold text-gray-500"
+        class="flex items-center justify-center text-5xl font-semibold text-gray-400"
       >
         {{ coin.toUpperCase() }}
       </div>
@@ -17,7 +17,7 @@
             : 'text-red-500',
         ]"
       >
-        {{ parseFloat(last.data.p) }}
+        {{ currencyFormatter.format(parseFloat(last.data.p)) }}
       </div>
     </div>
   </div>
@@ -25,17 +25,8 @@
 
 <script lang="ts">
 import { ref } from "@vue/reactivity";
-import { onMounted, onUnmounted, watch } from "@vue/runtime-core";
-
-function socketChange(socket: WebSocket, method: string, coin: string) {
-  socket.send(
-    JSON.stringify({
-      method: method,
-      params: [`${coin}usdt@aggTrade`],
-      id: 1,
-    })
-  );
-}
+import { onMounted, onUnmounted } from "@vue/runtime-core";
+import { currencyFormatter, socketChange } from "~/utils";
 
 export default {
   setup() {
@@ -90,6 +81,7 @@ export default {
       data,
       prev,
       last,
+      currencyFormatter,
     };
   },
 };
