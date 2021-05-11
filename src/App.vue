@@ -6,21 +6,22 @@
       >
         {{ coin.toUpperCase() }}
       </div>
-      <div v-if="last.data?.p">
+      <div v-if="last">
         <span
           :class="[
             'text-xl',
-            last.data.p > prev.data.p
+            last > prev
               ? 'text-green-500'
-              : last.data.p === prev.data.p
+              : last === prev
               ? 'text-gray-800'
               : 'text-red-500',
           ]"
         >
-          {{ currencyFormatter(last.data.p) }}
+          {{ currencyFormatter(last) }}
         </span>
       </div>
     </div>
+    <chart :prices="data" />
   </div>
 </template>
 
@@ -28,25 +29,26 @@
 import { ref } from "@vue/reactivity";
 import { onMounted, onUnmounted } from "@vue/runtime-core";
 import { currencyFormatter, socketChange } from "~/utils";
+import chart from "~/components/chart.vue";
+import { SocketResponse, PriceData } from "~/interfaces/PriceData";
 
 export default {
+  components: { chart },
   setup() {
-    const data = ref<any>([]);
-    const prev = ref<any>({});
-    const last = ref<any>({});
+    const data = ref<PriceData[]>([]);
+    const prev = ref<string>("");
+    const last = ref<string>("");
     const coin = ref<string>("btc");
-    let mess = {};
+    let mess: SocketResponse = {};
 
     const socket: WebSocket = new WebSocket(`wss://stream.binance.com/stream`);
     socket.onopen = function () {
       socketChange(socket, "SUBSCRIBE", coin.value);
     };
     socket.onmessage = function (message) {
-      const response = JSON.parse(message.data);
-      if (data.value.length > 50) {
-        data.value.shift();
-      }
-      data.value.push(response);
+      const response: SocketResponse = JSON.parse(message.data);
+      if (!response.data) return;
+      data.value.push(response.data);
       mess = response;
     };
 
@@ -78,7 +80,7 @@ export default {
 
     setInterval(function () {
       prev.value = last.value;
-      last.value = mess;
+      last.value = mess.data?.p || "";
     }, 200);
 
     return {
