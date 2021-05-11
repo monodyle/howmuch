@@ -4,20 +4,16 @@
     height="200"
     type="area"
     :options="chartOptions"
-    :series="[
-      {
-        name: 'Price',
-        data: data,
-      },
-    ]"
-  ></apexchart>
+    :series="series"
+  />
 </template>
 
 <script lang="ts">
-import { onMounted, reactive, ref } from "@vue/runtime-core";
+import { onMounted, reactive, ref, watch } from "@vue/runtime-core";
 import VueApexCharts from "vue3-apexcharts";
 import { chartOptions } from "~/utils";
-import { getPrices } from "./fetcher";
+import { getPrices, getSeries } from "./fetcher";
+import ChartSeries from "~/interfaces/Chart";
 
 export default {
   name: "chart",
@@ -27,20 +23,31 @@ export default {
   props: {
     prices: Array,
   },
-  setup(prop) {
-    const data = ref<number[][]>([]);
-    const dynamic = reactive({
-      prices: JSON.parse(JSON.stringify(prop.prices)),
+  setup(props) {
+    const _prices = reactive<any[]>(props.prices || []);
+    const series = ref<ChartSeries<number[][]>[]>([
+      {
+        name: "Price",
+        data: [],
+      },
+    ]);
+    const fetchData = ref<number[][]>([]);
+
+    watch(_prices, (values: any[]) => {
+      const parser = values.map((item): number[] => [item.E, parseFloat(item.p)])
+      const newSeries = getSeries([...fetchData.value, ...parser]);
+      series.value = newSeries
     });
 
     onMounted(async () => {
       const response: any[] = await getPrices("SHIB");
-      data.value = response.map((item) => [item.T, parseFloat(item.p)]);
+      const result = response.map((item) => [item.T, parseFloat(item.p)]);
+      fetchData.value = result;
     });
 
     return {
       chartOptions,
-      data: [...data.value, ...dynamic.prices],
+      series,
     };
   },
 };

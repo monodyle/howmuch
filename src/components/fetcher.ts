@@ -8,3 +8,7 @@ export const getPrices = async (coin: string): Promise<any> => {
     .json()
   return response
 }
+
+export const getSeries = (data: any) => {
+  return [{ name: 'Price', data }]
+}

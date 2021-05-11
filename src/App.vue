@@ -26,8 +26,8 @@
 </template>
 
 <script lang="ts">
-import { ref } from "@vue/reactivity";
-import { onMounted, onUnmounted } from "@vue/runtime-core";
+import { reactive, ref } from "@vue/reactivity";
+import { onMounted, onUnmounted, watch } from "@vue/runtime-core";
 import { currencyFormatter, socketChange } from "~/utils";
 import chart from "~/components/chart.vue";
 import { SocketResponse, PriceData } from "~/interfaces/PriceData";
@@ -35,7 +35,7 @@ import { SocketResponse, PriceData } from "~/interfaces/PriceData";
 export default {
   components: { chart },
   setup() {
-    const data = ref<PriceData[]>([]);
+    const data = reactive<PriceData[]>([]);
     const prev = ref<string>("");
     const last = ref<string>("");
     const coin = ref<string>("btc");
@@ -48,7 +48,7 @@ export default {
     socket.onmessage = function (message) {
       const response: SocketResponse = JSON.parse(message.data);
       if (!response.data) return;
-      data.value.push(response.data);
+      data.push(response.data);
       mess = response;
     };
 
