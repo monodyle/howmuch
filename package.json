@@ -1,10 +1,16 @@
 {
   "name": "howmuch",
-  "version": "0.0.0",
+  "version": "0.2.0",
+  "license": "MIT",
+  "author": "monodyle<monodylh@gmail.com>",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "serve": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monodyle/how-much.git"
   },
   "dependencies": {
     "vue": "^3.0.11"
