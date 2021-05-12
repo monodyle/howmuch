@@ -6,48 +6,60 @@
       >
         {{ coin.toUpperCase() }}
       </div>
-      <div v-if="last.data?.p">
+      <div v-if="last">
         <span
           :class="[
             'text-xl',
-            last.data.p > prev.data.p
+            last > prev
               ? 'text-green-500'
-              : last.data.p === prev.data.p
+              : last === prev
               ? 'text-gray-800'
               : 'text-red-500',
           ]"
         >
-          {{ currencyFormatter(last.data.p) }}
+          {{ currencyFormatter(last) }}
         </span>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full overflow-hidden">
+      <div class="-ml-6 -mr-2 pointer-events-none">
+        <chart :prices="data" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { ref } from "@vue/reactivity";
+import { reactive, ref } from "@vue/reactivity";
 import { onMounted, onUnmounted } from "@vue/runtime-core";
 import { currencyFormatter, socketChange } from "~/utils";
+import chart from "~/components/chart.vue";
+import { SocketResponse } from "~/interfaces/PriceData";
+import { DELAY_TIME } from "~/constants";
 
 export default {
+  components: { chart },
   setup() {
-    const data = ref<any>([]);
-    const prev = ref<any>({});
-    const last = ref<any>({});
+    const data = reactive<number[][]>([]);
+    const prev = ref<string>("");
+    const last = ref<string>("");
     const coin = ref<string>("btc");
-    let mess = {};
+    let mess: SocketResponse = {};
+    let readyFlag: boolean = true;
 
     const socket: WebSocket = new WebSocket(`wss://stream.binance.com/stream`);
     socket.onopen = function () {
       socketChange(socket, "SUBSCRIBE", coin.value);
     };
     socket.onmessage = function (message) {
-      const response = JSON.parse(message.data);
-      if (data.value.length > 50) {
-        data.value.shift();
+      const parser: SocketResponse = JSON.parse(message.data);
+      const response = parser.data;
+      if (!response) return;
+      if (readyFlag) {
+        data.push([response.E, parseFloat(response.p)]);
+        readyFlag = false;
       }
-      data.value.push(response);
-      mess = response;
+      mess = parser;
     };
 
     onMounted(() => {
@@ -78,8 +90,9 @@ export default {
 
     setInterval(function () {
       prev.value = last.value;
-      last.value = mess;
-    }, 200);
+      last.value = mess.data?.p || "";
+      readyFlag = true;
+    }, DELAY_TIME);
 
     return {
       coin,
