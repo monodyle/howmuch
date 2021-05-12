@@ -1,6 +1,6 @@
 // https://binance-docs.github.io/apidocs/spot/en/#aggregate-trade-streams
 
-export interface PriceData {
+interface PriceData {
   E: number // Event time
   p: string // Price
 }

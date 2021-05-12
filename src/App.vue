@@ -21,35 +21,45 @@
         </span>
       </div>
     </div>
-    <chart :prices="data" />
+    <div class="absolute bottom-0 left-0 w-full overflow-hidden">
+      <div class="-ml-6 -mr-2 pointer-events-none">
+        <chart :prices="data" />
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { reactive, ref } from "@vue/reactivity";
-import { onMounted, onUnmounted, watch } from "@vue/runtime-core";
+import { onMounted, onUnmounted } from "@vue/runtime-core";
 import { currencyFormatter, socketChange } from "~/utils";
 import chart from "~/components/chart.vue";
-import { SocketResponse, PriceData } from "~/interfaces/PriceData";
+import { SocketResponse } from "~/interfaces/PriceData";
+import { DELAY_TIME } from "~/constants";
 
 export default {
   components: { chart },
   setup() {
-    const data = reactive<PriceData[]>([]);
+    const data = reactive<number[][]>([]);
     const prev = ref<string>("");
     const last = ref<string>("");
     const coin = ref<string>("btc");
     let mess: SocketResponse = {};
+    let readyFlag: boolean = true;
 
     const socket: WebSocket = new WebSocket(`wss://stream.binance.com/stream`);
     socket.onopen = function () {
       socketChange(socket, "SUBSCRIBE", coin.value);
     };
     socket.onmessage = function (message) {
-      const response: SocketResponse = JSON.parse(message.data);
-      if (!response.data) return;
-      data.push(response.data);
-      mess = response;
+      const parser: SocketResponse = JSON.parse(message.data);
+      const response = parser.data;
+      if (!response) return;
+      if (readyFlag) {
+        data.push([response.E, parseFloat(response.p)]);
+        readyFlag = false;
+      }
+      mess = parser;
     };
 
     onMounted(() => {
@@ -81,7 +91,8 @@ export default {
     setInterval(function () {
       prev.value = last.value;
       last.value = mess.data?.p || "";
-    }, 200);
+      readyFlag = true;
+    }, DELAY_TIME);
 
     return {
       coin,
