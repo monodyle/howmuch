@@ -11,7 +11,7 @@
 
 Go to: https://how-much.vercel.app/#eth
 
-Change the path with symbol that avaiable on [Binance](binance)
+Change the path with symbol that avaiable on [Binance][binance]
 
 [binance]: https://www.binance.com/
 
